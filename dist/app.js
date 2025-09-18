@@ -1533,7 +1533,7 @@
     open(btn, closeMenus) {
       var _a;
       if (btn.getAttribute("data-open") === "true") {
-        closeMenus();
+        this.closeMenu(closeMenus);
         return;
       }
       closeMenus();
@@ -1601,10 +1601,34 @@
       menu.appendChild(customBtn);
       document.body.appendChild(menu);
       const rect = btn.getBoundingClientRect();
-      menu.style.top = rect.top - menu.offsetHeight - 8 + "px";
-      menu.style.left = rect.left - menu.offsetWidth + rect.width + "px";
-      if (parseFloat(menu.style.top) < 0) menu.style.top = rect.bottom + 8 + "px";
+      const vpW = window.innerWidth;
+      const vpH = window.innerHeight;
+      let top = rect.top - menu.offsetHeight - 8;
+      let left = rect.left - menu.offsetWidth + rect.width;
+      if (top < 0) top = rect.bottom + 8;
+      if (left + menu.offsetWidth > vpW - 4) left = vpW - menu.offsetWidth - 4;
+      if (left < 4) left = 4;
+      if (top + menu.offsetHeight > vpH - 4) top = Math.max(4, vpH - menu.offsetHeight - 4);
+      menu.style.top = top + "px";
+      menu.style.left = left + "px";
       btn.setAttribute("data-open", "true");
+      const onPointerDown = (e) => {
+        if (!this.currentMenu) return;
+        if (!e.target.closest(".fc-menu") && !e.target.closest('[data-menu-btn="theme"]')) {
+          this.closeMenu(closeMenus);
+          window.removeEventListener("pointerdown", onPointerDown, true);
+          window.removeEventListener("keydown", onKeyDown, true);
+        }
+      };
+      const onKeyDown = (e) => {
+        if (e.key === "Escape") {
+          this.closeMenu(closeMenus);
+          window.removeEventListener("pointerdown", onPointerDown, true);
+          window.removeEventListener("keydown", onKeyDown, true);
+        }
+      };
+      window.addEventListener("pointerdown", onPointerDown, true);
+      window.addEventListener("keydown", onKeyDown, true);
     }
     openCustomThemeModal() {
       var _a, _b;

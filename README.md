@@ -54,6 +54,12 @@ Minor lines hidden below scale 0.55 (`grid-zoom-far` class) to reduce noise. Thr
 ## Custom Themes
 Accessible via theme manager UI; stored in `localStorage` under `fc-custom-themes`. Swatches auto-generated.
 
+### Theme Menu Behavior
+The theme menu now:
+- Toggles closed when the toolbar Theme button is clicked again.
+- Closes on outside click or pressing Escape.
+- Clamps its position within the viewport (repositions below if not enough space above, and horizontally within window margins) to avoid rendering off-screen.
+
 ## Saving & Loading
 Charts saved as serialized app state objects (with timestamp) in `fc-saved-charts`. Load dialog offers delete, search, sort & pagination.
 

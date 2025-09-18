@@ -5,10 +5,11 @@ export class ThemeMenu {
   constructor(private deps: ToolbarDeps) {}
 
   open(btn: HTMLElement, closeMenus: ()=>void) {
-    if (btn.getAttribute('data-open')==='true') { closeMenus(); return; }
-  closeMenus();
-  const menu = document.createElement('div'); menu.className='fc-menu'; menu.dataset.menu='theme';
-  this.currentMenu = menu;
+    // Toggle behaviour: if already open, just close.
+    if (btn.getAttribute('data-open')==='true') { this.closeMenu(closeMenus); return; }
+    closeMenus();
+    const menu = document.createElement('div'); menu.className='fc-menu'; menu.dataset.menu='theme';
+    this.currentMenu = menu;
     const themes = [
       'dark','light','high-contrast','blue','green','purple',
       'light-blue','light-green','light-orange','light-gray','light-contrast'
@@ -36,11 +37,41 @@ export class ThemeMenu {
   customBtn.addEventListener('click', () => { this.closeMenu(closeMenus); this.openCustomThemeModal(); });
     menu.appendChild(customBtn);
     document.body.appendChild(menu);
+    // Position then clamp to viewport
     const rect = btn.getBoundingClientRect();
-    menu.style.top = (rect.top - menu.offsetHeight - 8) + 'px';
-    menu.style.left = (rect.left - menu.offsetWidth + rect.width) + 'px';
-    if (parseFloat(menu.style.top) < 0) menu.style.top = (rect.bottom + 8) + 'px';
+    const vpW = window.innerWidth; const vpH = window.innerHeight;
+    // Initial preferred position (above & right aligned)
+    let top = rect.top - menu.offsetHeight - 8;
+    let left = rect.left - menu.offsetWidth + rect.width;
+    // If above goes off screen, place below
+    if (top < 0) top = rect.bottom + 8;
+    // Clamp horizontally & vertically
+    if (left + menu.offsetWidth > vpW - 4) left = vpW - menu.offsetWidth - 4;
+    if (left < 4) left = 4;
+    if (top + menu.offsetHeight > vpH - 4) top = Math.max(4, vpH - menu.offsetHeight - 4);
+    menu.style.top = top + 'px';
+    menu.style.left = left + 'px';
     btn.setAttribute('data-open','true');
+
+    // Outside click & escape handling specific to this menu so it can self-close.
+    const onPointerDown = (e: PointerEvent) => {
+      if (!this.currentMenu) return;
+      if (!(e.target as HTMLElement).closest('.fc-menu') && !(e.target as HTMLElement).closest('[data-menu-btn="theme"]')) {
+        this.closeMenu(closeMenus);
+        window.removeEventListener('pointerdown', onPointerDown, true);
+        window.removeEventListener('keydown', onKeyDown, true);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        this.closeMenu(closeMenus);
+        window.removeEventListener('pointerdown', onPointerDown, true);
+        window.removeEventListener('keydown', onKeyDown, true);
+      }
+    };
+    // Capture phase so it fires before toolbar global handler if any
+    window.addEventListener('pointerdown', onPointerDown, true);
+    window.addEventListener('keydown', onKeyDown, true);
   }
 
   private openCustomThemeModal() {
