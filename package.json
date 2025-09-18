@@ -1,0 +1,24 @@
+{
+	"name": "flowchart-ts",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"clean": "rimraf dist",
+		"build": "npm run clean && esbuild src/app.ts --bundle --outfile=dist/app.js --target=es2018 --format=iife --sourcemap",
+		"dev": "esbuild src/app.ts --bundle --outfile=dist/app.js --target=es2018 --format=iife --sourcemap --watch=forever,assets=styles.css --servedir=.",
+		"serve:esbuild": "esbuild src/app.ts --bundle --outfile=dist/app.js --target=es2018 --format=iife --servedir=.",
+		"serve": "npm run build && http-server -p 9999 -c-1 .",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run"
+	},
+	"devDependencies": {
+		"@types/node": "^20.11.0",
+		"esbuild": "^0.21.0",
+		"http-server": "^14.1.1",
+		"rimraf": "^5.0.5",
+		"typescript": "^5.4.0",
+		"vitest": "^1.6.0",
+		"jsdom": "^24.0.0"
+	}
+}
